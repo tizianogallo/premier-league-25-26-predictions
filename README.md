@@ -111,6 +111,8 @@ More robust estimate — trains on progressively more seasons and tests on the n
 | XGBoost | 47.8% (±2.2%) | 53.4% (±0.7%) |
 | Logistic Regression | 51.7% (±2.6%) | 54.1% (±2.5%) |
 
+![Model Comparison](outputs/model_comparison_full.png)
+
 ### Analysis
 
 **Win/Draw/Loss**
@@ -121,35 +123,19 @@ The draw class is consistently the hardest to predict — Logistic Regression sc
 
 **Over/Under 2.5 Goals**
 
-Both models comfortably beat the 50% baseline. XGBoost edges Logistic Regression on holdout (58.1% vs 56.4%) but Logistic Regression wins on CV mean (54.1% vs 53.4%). The extremely low standard deviation on XGBoost's CV (±0.7%) indicates very consistent performance across seasons.
-
-Over/Under is a more tractable prediction problem than Win/Draw/Loss because total goals is less sensitive to the random variance that causes upsets.
+Both models comfortably beat the 50% baseline. XGBoost edges Logistic Regression on holdout (58.1% vs 56.4%), but Logistic Regression wins on CV mean (54.1% vs 53.4%). The extremely low standard deviation on XGBoost's CV (±0.7%) indicates very consistent performance across seasons.
 
 **Why Logistic Regression was chosen for the simulation**
 
-Despite XGBoost performing better on holdout Over/Under, Logistic Regression was used for the title race Monte Carlo simulation for two reasons. First, it outperforms XGBoost on Win/Draw/Loss across both validation methods. Second, Logistic Regression produces better-calibrated probabilities — meaning a 60% predicted probability genuinely reflects a 60% chance. In a simulation running 10,000 seasons, small miscalibrations in probabilities compound across every remaining fixture, making calibration more important than raw accuracy.
+Despite XGBoost performing better on holdout Over/Under, Logistic Regression was used for the Monte Carlo simulation for two reasons. First, it outperforms XGBoost on Win/Draw/Loss across both validation methods. Second, Logistic Regression produces better-calibrated probabilities — meaning a 60% predicted probability genuinely reflects a 60% chance. In a simulation running 10,000 seasons, small miscalibrations compound across every remaining fixture, making calibration more important than raw accuracy.
 
 ---
 
-## 2025/26 Predictions vs Reality
-
-The model was tested against 291 real matches from the 2025/26 season (matchdays 1–28).
-
-**Overall accuracy: 43.3% (XGBoost) / 46.7% (Logistic)**
-
-**Arsenal specifically: 63.3% accuracy across 30 matches**
-
-Arsenal's higher prediction accuracy reflects the consistency of their form this season — they win frequently enough that predicting a home win for them is correct most of the time. The model correctly predicted their wins against Leeds, West Ham, Fulham, Crystal Palace, Burnley, Tottenham, Brentford, Wolves, Everton, Brighton, Bournemouth, Chelsea, and others.
-
-The model's notable misses on Arsenal were mostly draws and away defeats — Man United (predicted away win, Arsenal won), Newcastle (predicted away win, Arsenal won), and several draws that the model predicted as Arsenal wins. This is consistent with the general draw prediction weakness identified in evaluation.
-
----
-
-## 2025/26 Title Race Simulation
-
-**Method:** Monte Carlo simulation — 10,000 full season runs using Logistic Regression probabilities for every remaining fixture. Starting points taken from the real standings after matchday 29.
+## 2025/26 Season
 
 ### Current Standings (Matchday 29)
+
+![Standings Table](outputs/standings_table.png)
 
 | Pos | Team | Played | Pts | GD |
 |---|---|---|---|---|
@@ -160,7 +146,19 @@ The model's notable misses on Arsenal were mostly draws and away defeats — Man
 | 5 | Chelsea | 29 | 48 | +19 |
 | 6 | Liverpool | 29 | 48 | +9 |
 
-### Simulation Results
+### Arsenal Season Journey
+
+![Arsenal Season](outputs/arsenal_season.png)
+
+Arsenal have been the most consistent team in the league — dominant from October onwards with very few dropped points. The model predicted their results correctly 63.3% of the time, well above the overall accuracy of 46.7%. The main misses were draws and away defeats that the model expected them to win.
+
+---
+
+## Title Race Simulation
+
+**Method:** Monte Carlo simulation — 10,000 full-season runs using Logistic Regression probabilities for every remaining fixture.
+
+![Title Race](outputs/title_race.png)
 
 | Team | Title % | Top 4 % | Relegated % |
 |---|---|---|---|
@@ -176,44 +174,25 @@ The model's notable misses on Arsenal were mostly draws and away defeats — Man
 | Nott'm Forest | 0.0% | 0.0% | 30.8% |
 | Tottenham | 0.0% | 0.0% | 30.6% |
 
-### Analysis
+**Title race:** Arsenal are overwhelming favourites at 87.4%. With a 7-point lead and 8 games remaining, the simulation reflects the near-mathematical certainty of their title win. Manchester City at 12.4% are the only realistic challenger.
 
-**Title race:** Arsenal are overwhelming favourites at 87.4%. With a 7-point lead and only 8 games remaining, the simulation reflects the near-mathematical certainty of their title win. Man City at 12.4% are the only realistic challenger — they would need Arsenal to drop points in multiple fixtures while winning all their own remaining games. Every other team is effectively eliminated.
+**Top 4:** Arsenal and Man City are both certain. The battle for 3rd and 4th is wide open — Man United (66.6%), Aston Villa (44.9%), Chelsea (42.2%), and Liverpool (37.1%) all still in contention.
 
-**Top 4:** Arsenal and Man City are both certain (100% / 99.7%). The battle for 3rd and 4th is genuinely open — Man United (66.6%), Aston Villa (44.9%), Chelsea (42.2%), and Liverpool (37.1%) are all in contention with 8 games left.
+### Relegation Battle
 
-**Relegation:** Wolves (99.7%) and Burnley (97.4%) are effectively down. The third relegation spot is an extremely tight three-way battle between West Ham (32.0%), Nott'm Forest (30.8%), and Tottenham (30.6%) — any of the three could survive or go down.
+![Relegation](outputs/relegation.png)
+
+Wolves (99.7%) and Burnley (97.4%) are effectively down. The third spot is a tight three-way battle between West Ham (32.0%), Nott'm Forest (30.8%), and Tottenham (30.6%).
 
 ---
 
 ## Limitations
 
-- **Draws are systematically underpredicted** — a known limitation of all football models, not specific to this project
+- **Draws are systematically underpredicted** — a known limitation of all football models
 - **No injury or suspension data** — squad availability is not modelled
-- **Home advantage** is captured implicitly through rolling form but not as an explicit feature
-- **Newly promoted teams** (Burnley, Sunderland, Leeds) have limited historical PL data which reduces feature quality in their first season back
-- **Managerial changes** break rolling form continuity — a team's form under a new manager may not reflect their previous results
-
----
-
-## Outputs
-
-All charts saved to the `outputs/` folder:
-
-```
-outputs/
-├── standings_table.png
-├── title_race.png
-├── relegation.png
-├── arsenal_season.png
-├── model_summary.png
-├── xgb_wdl_confusion.png
-├── xgb_ou_confusion.png
-├── model_comparison_holdout.png
-├── cv_folds_detail.png
-├── model_comparison_full.png
-└── feature_importance.png
-```
+- **Home advantage** is captured implicitly through rolling form, but not as an explicit feature
+- **Newly promoted teams** have limited historical PL data, which reduces feature quality
+- **Managerial changes** break rolling form continuity
 
 ---
 
